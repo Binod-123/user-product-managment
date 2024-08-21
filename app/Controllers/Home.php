@@ -16,7 +16,7 @@ class Home extends BaseController
         return view('generate_bill');
     }
     
-        public function searchProduct()
+     public function searchProduct()
     {
         $productModel = new ProductModel();
         $query = $this->request->getVar('query');
@@ -24,5 +24,8 @@ class Home extends BaseController
 
         return $this->response->setJSON($products);
     
+    }
+    public function save(){
+        
     }
 }

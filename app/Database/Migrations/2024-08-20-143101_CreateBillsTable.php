@@ -11,9 +11,9 @@ class CreateBillsTable extends Migration
         $this->forge->addField([
             'id'            => ['type' => 'INT', 'auto_increment' => true],
             'user_id'       => ['type' => 'INT'],
-            'product_id'    => ['type' => 'INT'],
-            'quantity'      => ['type' => 'INT', 'constraint' => '11'],
+            'bill_code'      => ['type' => 'INT', 'constraint' => '11'],
             'total_price'   => ['type' => 'DECIMAL', 'constraint' => '10,2'],
+            'products'     => ['type' => 'JSON', 'null' => true],
             'created_at'    => ['type' => 'DATETIME', 'null' => true],
             'updated_at'    => ['type' => 'DATETIME', 'null' => true],
         ]);
