@@ -19,10 +19,13 @@ class CreateProductsTable extends Migration
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('products');
+        $seeder = \Config\Database::seeder();
+        $seeder->call('ProductSeeder');
     }
 
     public function down()
     {
-        //
+        $this->forge->dropTable('products');
     }
+  
 }

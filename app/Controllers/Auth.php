@@ -14,9 +14,9 @@ class Auth extends ResourceController
             // Validation rules
             //echo "hello world";
             $rules = [
-                'username' => 'required|min_length[3]|max_length[20]|is_unique[users.username]',
+                'username' => 'required|min_length[3]|max_length[20]|alpha_numeric|is_unique[users.username]',
                 'email'    => 'required|valid_email|is_unique[users.email]',
-                'password' => 'required|min_length[8]',
+                'password' => 'required|min_length[8]|numeric',
             ];
 
             if ($this->validate($rules)) {
@@ -56,22 +56,10 @@ class Auth extends ResourceController
                 $userModel = new UserModel();
                 $loginAttemptsModel = new \App\Models\LoginAttemptsModel();
               
-                $user = $userModel->where('username', $this->request->getVar('username'))->first();
+                $user = $userModel->where('username', $this->request->getPost('username'))->first();
                 $ipAddress = $this->request->getIPAddress();
-                $plainPassword = trim($this->request->getVar('password'));
-    $hashedPassword = $user['password'];
-
-    echo '<pre>';
-    echo 'Plain Password: ' . $plainPassword . PHP_EOL;
-    echo 'Hashed Password: ' . $hashedPassword . PHP_EOL;
-    echo '</pre>';
-
-    if (password_verify($plainPassword, $hashedPassword)) {
-        echo 'Password is valid!';exit;
-    } else {
-        echo 'Invalid password.';exit;
-    }
-                if ($user && password_verify($this->request->getVar('password'), $user['password'])) {
+                
+                if ($user && password_verify($this->request->getPost('password'), $user['password'])) {
                     // Set session or token for the logged-in user
                     session()->set([
                         'user_id'   => $user['id'],
@@ -81,7 +69,7 @@ class Auth extends ResourceController
     
                     // Log successful login attempt
                     $loginAttemptsModel->save([
-                        'username'    => $this->request->getVar('username'),
+                        'username'    => $this->request->getPost('username'),
                         'success'     => true,
                         'attempt_time'=> date('Y-m-d H:i:s'),
                         'ip_address'  => $ipAddress,
@@ -91,7 +79,7 @@ class Auth extends ResourceController
                 } else {
                     // Log failed login attempt
                     $loginAttemptsModel->save([
-                        'username'    => $this->request->getVar('username'),
+                        'username'    => $this->request->getPost('username'),
                         'success'     => false,
                         'attempt_time'=> date('Y-m-d H:i:s'),
                         'ip_address'  => $ipAddress,

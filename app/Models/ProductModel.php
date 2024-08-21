@@ -6,41 +6,21 @@ use CodeIgniter\Model;
 
 class ProductModel extends Model
 {
-    protected $table            = 'products';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = [];
+    protected $table = 'products';
+    protected $primaryKey = 'id';
+    protected $allowedFields = ['product_name', 'product_code', 'price', 'stock_quantity'];
 
-    protected bool $allowEmptyInserts = false;
-    protected bool $updateOnlyChanged = true;
-
-    protected array $casts = [];
-    protected array $castHandlers = [];
-
-    // Dates
-    protected $useTimestamps = false;
-    protected $dateFormat    = 'datetime';
+    protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
-
-    // Validation
-    protected $validationRules      = [];
-    protected $validationMessages   = [];
-    protected $skipValidation       = false;
-    protected $cleanValidationRules = true;
-
-    // Callbacks
-    protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
-    protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
-    protected $afterUpdate    = [];
-    protected $beforeFind     = [];
-    protected $afterFind      = [];
-    protected $beforeDelete   = [];
-    protected $afterDelete    = [];
+    public function searchProducts($query)
+    {
+        return $this->groupStart()
+                        ->like('product_name', $query)
+                        ->orLike('product_code', $query)
+                    ->groupEnd()
+                    ->where('stock_quantity >', 0)
+                    ->where('price >', 0)
+                    ->findAll();
+    }
 }
