@@ -11,10 +11,18 @@ class Home extends BaseController
     }
     public function dashboard()
     {
+        if (!$this->session->get('logged_in')) {
+            return redirect()->to('/login');
+        }else{
         return view('dashboard');
+        }
     }
     public function generate_bill(){
+        if (!$this->session->get('logged_in')) {
+            return redirect()->to('/login');
+        }else{
         return view('generate_bill');
+        }
     }
     
      public function searchProduct()

@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
-
+use App\Models\BillModel;
 class BillsController extends ResourceController
 {
     protected $modelName = 'App\Models\BillModel';
@@ -18,7 +18,7 @@ class BillsController extends ResourceController
     public function getBillsByUser($userId)
     {
         // Instantiate the BillModel
-        $billModel =  new \App\Models\BillModel();
+        $billModel =  new BillModel();
 
         // Fetch bills for the specified user
         $bills = $billModel->getBillsByUserId($userId);
@@ -48,4 +48,20 @@ class BillsController extends ResourceController
             ]);
         }
     }
+    public function getBillDetails($billNo)
+{           $billModel =  new BillModel();
+    $bill = $billModel->getBillDetailsByBillNo($billNo);
+
+    if ($bill) {
+        return $this->respond([
+            'status' => 'success',
+            'data' => $bill
+        ]);
+    } else {
+        return $this->respond([
+            'status' => 'error',
+            'message' => 'No details found for this bill'
+        ], 404);
+    }
+}
 }

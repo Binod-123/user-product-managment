@@ -17,10 +17,10 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-md-auto gap-2">
         <li class="nav-item rounded">
-          <a class="nav-link active" aria-current="page" href="#"><i class="bi bi-house-fill me-2"></i>Home</a>
+          <a class="nav-link active" aria-current="page" href="/"><i class="bi bi-house-fill me-2"></i>Home</a>
         </li>
         <li class="nav-item rounded">
-          <a class="nav-link" href="#"><i class="bi bi-people-fill me-2"></i>Logout</a>
+          <a class="nav-link" href="/logout"><i class="bi bi-people-fill me-2"></i>Logout</a>
         </li>
        
       </ul>
@@ -315,7 +315,7 @@ $(document).ready(function() {
             data: $(this).serialize(), // Serialize the form data
             dataType: 'JSON',     // The expected response format
             success: function(response) {
-                alert(response);
+               // alert(response);
                 // Handle success response
                  //console.log('Form submitted successfully:', response);
                 window.location.href = response.redirect_url;

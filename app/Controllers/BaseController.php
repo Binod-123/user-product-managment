@@ -24,7 +24,7 @@ abstract class BaseController extends Controller
     /**
      * Instance of the main Request object.
      *
-     * @var CLIRequest|IncomingRequest
+     * @var RequestInterface
      */
     protected $request;
 
@@ -38,12 +38,6 @@ abstract class BaseController extends Controller
     protected $helpers = [];
 
     /**
-     * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
-     */
-    // protected $session;
-
-    /**
      * @return void
      */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
@@ -51,8 +45,15 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        // Preload any models, libraries, etc, here.
+        // Load the session service
+        $this->session = \Config\Services::session();
 
-        // E.g.: $this->session = \Config\Services::session();
+        // Get the current URI path
+        $currentPath = $this->request->getUri()->getPath();
+
+        // Check if user is not authenticated and redirect to login page
+        if (!$this->session->get('logged_in') && $currentPath !== 'login') {
+            return redirect()->to('/login');
+        }
     }
 }

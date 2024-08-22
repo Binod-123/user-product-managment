@@ -28,6 +28,10 @@ class BillModel extends Model
 
         return $bills;
     }
+    public function getBillDetailsByBillNo($billNo)
+{
+    return $this->where('bill_code', $billNo)->first();
+}
 }
 
 
