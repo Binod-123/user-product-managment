@@ -16,7 +16,7 @@ class Auth extends ResourceController
             $rules = [
                 'username' => 'required|min_length[3]|max_length[20]|alpha_numeric|is_unique[users.username]',
                 'email'    => 'required|valid_email|is_unique[users.email]',
-                'password' => 'required|min_length[8]|numeric',
+                'password' => 'required|min_length[8]',
             ];
 
             if ($this->validate($rules)) {

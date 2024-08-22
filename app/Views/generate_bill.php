@@ -58,7 +58,8 @@
         </div>
 
         <h2 class="mt-5">Generate Bill</h2>
-        <form action="home/save" method="POST">
+        <form id="cartForm">
+        <?= csrf_field() ?>
         <div class="cart-table-container">
             <table id="cart-table" class="table table-bordered table-striped">
                 <thead class="table-dark">
@@ -83,8 +84,8 @@
         <h2 class="mt-4">Total Price: <span id="total-price">0</span></h2>
 
         <input type="hidden" name="total" id="total"value="">
-        <input type="hidden" name="cart_data" id="cart_data">
-        <button id="submit-cart" class="btn btn-success mt-3">Submit Cart</button>
+        <input type="hidden" name="cart_data" id="cart_data" value="">
+        <button id="submit-cart" class="btn btn-success mt-3" disable>Submit Cart</button>
         </form>
     </div>
 
@@ -130,7 +131,7 @@
                     }
                 });
             });
-
+     
             // Increment quantity
             $(document).on('click', '.increment-btn', function () {
                 const $input = $(this).closest('.input-group').find('.qty');
@@ -185,6 +186,7 @@
 
             // Update cart table
             function updateCartTable() {
+                
             $('#cart-table tbody').empty();
             for (let id in cart) {
                 
@@ -200,9 +202,9 @@
                         </td>
                         <td>
                             <div class="input-group">
-                                <button class="btn btn-outline-secondary decrement-cart-btn">-</button>
+                                <a class="btn btn-outline-secondary decrement-cart-btn">-</a>
                                 <input type="number" class="form-control cart-qty" value="${item.qty}" min="1" max="${item.stock_quantity}" readonly>
-                                <button class="btn btn-outline-secondary increment-cart-btn">+</button>
+                                <a class="btn btn-outline-secondary increment-cart-btn">+</a>
                             </div>
                         </td>
                         <td class="cart-total">${itemTotal.toFixed(2)}</td>
@@ -211,6 +213,7 @@
                     </tr>
                 `);
               }
+              updateCartButtonState();
                 calculateTotal();
             }
 
@@ -224,46 +227,27 @@
                 $('#total-price').text(totalPrice.toFixed(2));
                 $('#total').val(totalPrice.toFixed(2));
             }
-
+      
             // Submit cart to the database
-            $('#submit-cart').click(function () {
-                if (Object.keys(cart).length === 0) {
-                    alert("Cart is empty!");
-                    return;
-                }
-
-                $.ajax({
-                    url: '<?= base_url('home/submitCart') ?>',
-                    method: 'POST',
-                    data: { cart: cart, total_price: totalPrice },
-                    success: function (response) {
-                        alert("Cart submitted successfully!");
-                        // Clear cart and reset UI
-                        Object.keys(cart).forEach(key => delete cart[key]);
-                        updateCartTable();
-                        calculateTotal();
-                    }
-                });
-            });
             // Increment cart quantity
-$(document).on('click', '.increment-cart-btn', function () {
-   
-    const $row = $(this).closest('tr');
-    const productId = $row.data('id');
-     // Assuming `stock` is available in the cart item
-    
-    const $qtyInput = $row.find('.cart-qty');
-    let qty = parseInt($qtyInput.val());
-    const max = $qtyInput.attr('max');
-    
-    if (qty < max) {
-        qty++;
-        $row.find('.cart-qty').val(qty);
-        cart[productId].qty = qty;
-        updateRowTotal($row);
-        calculateTotal();
-    }
-});
+        $(document).on('click', '.increment-cart-btn', function () {
+        
+            const $row = $(this).closest('tr');
+            const productId = $row.data('id');
+            // Assuming `stock` is available in the cart item
+            
+            const $qtyInput = $row.find('.cart-qty');
+            let qty = parseInt($qtyInput.val());
+            const max = $qtyInput.attr('max');
+            
+            if (qty < max) {
+                qty++;
+                $row.find('.cart-qty').val(qty);
+                cart[productId].qty = qty;
+                updateRowTotal($row);
+                calculateTotal();
+            }
+        });
 
 // Decrement cart quantity
 $(document).on('click', '.decrement-cart-btn', function () {
@@ -285,6 +269,7 @@ $(document).on('click', '.remove-cart-btn', function () {
     const productId = $(this).data('id');
     delete cart[productId];
     updateCartTable();
+    updateCartButtonState();
 });
 
 // Update row total
@@ -296,19 +281,19 @@ function updateRowTotal($row) {
 
     $row.find('.cart-total').text(total.toFixed(2));
 }
-function handleFormSubmit(event) {
-        event.preventDefault();
-        
-        const cartData = [];
-        const rows = document.querySelectorAll('#cart-table tbody tr');
+$(document).ready(function() {
+    $('#cartForm').on('submit', function(event) {
+        event.preventDefault(); // Prevent the form from submitting the traditional way
 
-        rows.forEach(row => {
-            const product = row.querySelector('input[name="product[]"]').value;
-            const code = row.querySelector('input[name="code[]"]').value;
-            const price = row.querySelector('input[name="price[]"]').value;
-            const qty = row.querySelector('.cart-qty').value;
-            const total = row.querySelector('.cart-total').textContent.trim();
-            const id=row.querySelector('#product_id').value;
+        const cartData = [];
+        $('#cart-table tbody tr').each(function() {
+            const row = $(this);
+            const product = row.find('input[name="product[]"]').val();
+            const code = row.find('input[name="code[]"]').val();
+            const price = row.find('input[name="price[]"]').val();
+            const qty = row.find('.cart-qty').val();
+            const total = row.find('.cart-total').text().trim();
+            const id = row.find('input[name="product_id"]').val();
 
             cartData.push({
                 id: id,
@@ -320,12 +305,60 @@ function handleFormSubmit(event) {
             });
         });
 
-        document.getElementById('cart_data').value = JSON.stringify(cartData);
-
-        // Uncomment the line below to submit the form after processing.
-        // event.target.submit();
-    }
+        // Assign the JSON string to the hidden input field
+        $('#cart_data').val(JSON.stringify(cartData));
+       
+        // Send the form data using AJAX
+        $.ajax({
+            url: 'home/save',  // The URL to submit the form data to
+            method: 'POST',       // The HTTP method to use
+            data: $(this).serialize(), // Serialize the form data
+            dataType: 'JSON',     // The expected response format
+            success: function(response) {
+                alert(response);
+                // Handle success response
+                 //console.log('Form submitted successfully:', response);
+                window.location.href = response.redirect_url;
+                //alert('Form submitted successfully!');
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error('Form submission failed:', status, error);
+                alert('Form submission failed. Please try again.');
+            }
         });
+    });
+});
+
+    // Function to toggle the button state
+    function toggleSearchButton() {
+        const searchInput = $('#product-search').val().trim();
+        $('#search-button').prop('disabled', searchInput === '');
+    }
+
+    // Initial check on page load
+    toggleSearchButton();
+
+    // Event listener for input field
+    $('#product-search').on('input', function() {
+        toggleSearchButton();
+    });
+    function updateCartButtonState() {
+        const cartTableRows = $('#cart-table tbody tr').length;
+        const submitButton = $('#submit-cart');
+       // const noCartMessage = $('#no-cart-message');
+        
+        if (cartTableRows > 0) {
+            submitButton.prop('disabled', false); // Enable the button
+          //  noCartMessage.addClass('d-none'); // Hide the "No products" message
+        } else {
+            submitButton.prop('disabled', true); // Disable the button
+           // noCartMessage.removeClass('d-none'); // Show the "No products" message
+        }
+    }
+    updateCartButtonState();
+});
+       
     </script>
 </body>
 </html>

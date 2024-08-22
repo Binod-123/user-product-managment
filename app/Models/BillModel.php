@@ -6,41 +6,28 @@ use CodeIgniter\Model;
 
 class BillModel extends Model
 {
-    protected $table            = 'bills';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = [];
+    protected $table = 'bills';
+    protected $primaryKey = 'id';
+    protected $allowedFields = ['user_id', 'bill_code', 'total_price', 'products', 'created_at', 'updated_at'];
 
-    protected bool $allowEmptyInserts = false;
-    protected bool $updateOnlyChanged = true;
+    public function getBillsByUserId($userId)
+    {
+        // $bills = $this->where('user_id', $userId)->findAll();
+        $bills = $this->db->table('bills')
+                      ->select('bills.*, users.username') // Select columns from bills and username from users
+                      ->join('users', 'users.id = bills.user_id') // Join with users table
+                      ->where('bills.user_id', $userId) // Filter by user ID
+                      ->get()
+                      ->getResultArray();
 
-    protected array $casts = [];
-    protected array $castHandlers = [];
+        // Process each bill to count the number of products
+        foreach ($bills as &$bill) {
+            $products = json_decode($bill['products'], true);
+            $bill['products_count'] = count($products); // Add product count to the response
+        }
 
-    // Dates
-    protected $useTimestamps = false;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
-
-    // Validation
-    protected $validationRules      = [];
-    protected $validationMessages   = [];
-    protected $skipValidation       = false;
-    protected $cleanValidationRules = true;
-
-    // Callbacks
-    protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
-    protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
-    protected $afterUpdate    = [];
-    protected $beforeFind     = [];
-    protected $afterFind      = [];
-    protected $beforeDelete   = [];
-    protected $afterDelete    = [];
+        return $bills;
+    }
 }
+
+
